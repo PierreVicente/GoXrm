@@ -16,7 +16,7 @@ var spnames = map[string]string{
 	"activitypointer":    "activityid",
 }
 
-func getPrimaryIdAttribute(entity string) string {
+func GetPrimaryIdAttribute(entity string) string {
 	pk, ok := spnames[entity]
 	if ok {
 		return pk
