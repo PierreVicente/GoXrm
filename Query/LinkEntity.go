@@ -12,3 +12,21 @@ type LinkEntity struct {
 	Orders                []OrderExpression
 	JoinOperator          int32
 }
+
+//func NewLinkEntityCollection(links []LinkEntity) []LinkEntity{
+//	var lks []LinkEntity
+//	for i, lk := range(links){
+//		lks[i] = lk
+//	}
+//	return lks
+//}
+
+func NewLinkEntity(linkFromEntityName string, linkToEntityName string, linkFromAttributeName string, linkToAttributeName string, joinOperator int32) LinkEntity {
+	var lk LinkEntity
+	lk.JoinOperator = joinOperator
+	lk.LinkToAttributeName = linkToAttributeName
+	lk.LinkFromAttributeName = linkFromAttributeName
+	lk.LinkToEntityName = linkToEntityName
+	lk.LinkFromEntityName = linkFromEntityName
+	return lk
+}

@@ -3,23 +3,24 @@ package AADAuth
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/google/uuid"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
-func AADAuthenticateWithSecret(loginUrl string, tenantId string, clientId string, resourceUrl string, secret string) AADAuthResult {
+func AADAuthenticateWithSecret(loginUrl string, tenantId uuid.UUID, clientId uuid.UUID, resourceUrl string, secret string) *AADAuthResult {
 
 	tokenEndpoint := loginUrl
 	if strings.HasSuffix(tokenEndpoint, "/") {
 		tokenEndpoint += "/"
 	}
 
-	tokenEndpoint += tenantId + "/oauth2/token"
+	tokenEndpoint += tenantId.String() + "/oauth2/token"
 
 	var body = "resource=" + url.QueryEscape(resourceUrl) + "&"
-	body += "client_id=" + clientId + "&"
+	body += "client_id=" + clientId.String() + "&"
 	body += "grant_type=client_credentials" + "&"
 	body += "client_secret=" + url.QueryEscape(secret)
 
@@ -40,28 +41,29 @@ func AADAuthenticateWithSecret(loginUrl string, tenantId string, clientId string
 
 	rbody, _ := ioutil.ReadAll(resp.Body)
 
-	var aada AADAuthResult
+	aada := new(AADAuthResult)
 	err3 := json.Unmarshal(rbody, &aada)
 	if err3 != nil {
 		panic(err3)
 	}
 
-	aada.authMode = AuthMode_Secret
+	aada.AuthMode = AuthMode_Secret
+	aada.AuthType = AuthType_Office365
 
 	return aada
 
 }
 
-func AADAuthenticateWithPassword(loginUrl, tenantId, clientId, resourceUrl, userName, password string) AADAuthResult {
+func AADAuthenticateWithPassword(loginUrl string, tenantId uuid.UUID, clientId uuid.UUID, resourceUrl, userName, password string) *AADAuthResult {
 
 	var tokenEndpoint = loginUrl
 	if !strings.HasSuffix(tokenEndpoint, "/") {
 		tokenEndpoint += "/"
 	}
-	tokenEndpoint += tenantId + "/oauth2/token"
+	tokenEndpoint += tenantId.String() + "/oauth2/token"
 	//https://login.microsoftonline.com/065377e9-ac15-4669-9c10-c5e2b3848e99/oauth2/token";
 	var body = "resource=" + url.QueryEscape(resourceUrl) + "&"
-	body += "client_id=" + clientId + "&"
+	body += "client_id=" + clientId.String() + "&"
 	body += "grant_type=password" + "&"
 	body += "username=" + url.QueryEscape(userName) + "&"
 	body += "password=" + url.QueryEscape(password)
@@ -84,28 +86,29 @@ func AADAuthenticateWithPassword(loginUrl, tenantId, clientId, resourceUrl, user
 
 	rbody, _ := ioutil.ReadAll(resp.Body)
 
-	var aada AADAuthResult
+	aada := new(AADAuthResult)
 	err3 := json.Unmarshal(rbody, &aada)
 	if err3 != nil {
 		panic(err3)
 	}
 
-	aada.authMode = AuthMode_Password
+	aada.AuthMode = AuthMode_Password
+	aada.AuthType = AuthType_Office365
 
 	return aada
 
 }
 
-func RenewToken(loginUrl, tenantId, clientId, resourceUrl, rToken string) AADAuthResult {
+func RenewToken(loginUrl string, tenantId uuid.UUID, clientId uuid.UUID, resourceUrl, rToken string) *AADAuthResult {
 
 	var tokenEndpoint = loginUrl
 	if !strings.HasSuffix(tokenEndpoint, "/") {
 		tokenEndpoint += "/"
 	}
-	tokenEndpoint += tenantId + "/oauth2/token"
+	tokenEndpoint += tenantId.String() + "/oauth2/token"
 	//https://login.microsoftonline.com/065377e9-ac15-4669-9c10-c5e2b3848e99/oauth2/token";
 	var body = "resource=" + url.QueryEscape(resourceUrl) + "&"
-	body += "client_id=" + clientId + "&"
+	body += "client_id=" + clientId.String() + "&"
 	body += "grant_type=refresh_token" + "&"
 	body += "refresh_token=" + rToken
 
@@ -126,7 +129,7 @@ func RenewToken(loginUrl, tenantId, clientId, resourceUrl, rToken string) AADAut
 
 	rbody, _ := ioutil.ReadAll(resp.Body)
 
-	var aada AADAuthResult
+	var aada = new(AADAuthResult)
 	err3 := json.Unmarshal(rbody, &aada)
 	if err3 != nil {
 		panic(err3)

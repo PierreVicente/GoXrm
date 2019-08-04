@@ -16,13 +16,18 @@ type QueryExpression struct {
 }
 
 func (qe *QueryExpression) AddLink(linkToEntityName string, linkFromAttributeName string, linkToAttributeName string, joinOperator int32) LinkEntity {
-	lk := new(LinkEntity{LinkFromEntityName: qe.EntityName, LinkToEntityName: linkToEntityName, LinkFromAttributeName: linkFromAttributeName, LinkToAttributeName: linkFromAttributeName, JoinOperator: joinOperator})
+	var lk LinkEntity
+	lk.LinkToEntityName = linkToEntityName
+	lk.LinkFromAttributeName = linkFromAttributeName
+	lk.LinkToAttributeName = linkToAttributeName
+	lk.JoinOperator = joinOperator
+	//lk := new(LinkEntity{LinkFromEntityName: qe.EntityName, LinkToEntityName: linkToEntityName, LinkFromAttributeName: linkFromAttributeName, LinkToAttributeName: linkFromAttributeName, JoinOperator: joinOperator})
 	qe.LinkEntities = append(qe.LinkEntities, lk)
 	return lk
 }
 
-func (qe *QueryExpression) AddOrder(attributeName string, OrderType int32) {
-	qe.Orders = append(qe.Orders, new(OrderExpression{OrderType: OrderType, AttributeName: attributeName}))
+func (qe *QueryExpression) AddOrder(attributeName string, orderType int32) {
+	qe.Orders = append(qe.Orders, NewOrderExpression(attributeName, orderType))
 }
 
 func NewQueryExpression(entityName string) *QueryExpression {

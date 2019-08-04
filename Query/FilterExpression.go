@@ -7,9 +7,17 @@ type FilterExpression struct {
 }
 
 func NewFilterExpression(logicalOperator int32) FilterExpression {
-	return new(FilterExpression{LogicalOperator: logicalOperator})
+	var fil FilterExpression
+	fil.FilterOperator = logicalOperator
+	return fil
+	//return new(FilterExpression{LogicalOperator: logicalOperator})
 }
 
 func (filter *FilterExpression) AddCondition(entityName string, attributename string, conditionOperator int32, values []interface{}) {
-	filter.Conditions = append(filter.Conditions, new(ConditionExpression{Values: values, EntityName: entityName, AttributeName: attributename, Operator: conditionOperator}))
+	var cnd ConditionExpression
+	cnd.Values = values
+	cnd.EntityName = entityName
+	cnd.AttributeName = attributename
+	cnd.Operator = conditionOperator
+	filter.Conditions = append(filter.Conditions, cnd)
 }

@@ -1,8 +1,8 @@
 package GoXrm
 
 import (
+	"github.com/PierreVicente/GoXrm/Constants"
 	"github.com/google/uuid"
-	"go/types"
 	"strings"
 	"time"
 )
@@ -28,23 +28,23 @@ func (xrmt XrmType) IsNull() bool {
 
 type Entity struct {
 	RowVersion      int64
-	Id              uuid.UUID
+	Id              string
 	LogicalName     string
-	Attributes      map[string]XrmType
+	Attributes      map[string]interface{}
 	FormattedValues map[string]string
 	//RelatedEntities map[RelationShip]EntityCollection
-	jProps []types.Var
+	jProps map[string]interface{}
 }
 
-func (e Entity) PrimaryIdAttribute() string {
+func (e *Entity) PrimaryIdAttribute() string {
 	return GetPrimaryIdAttribute(e.LogicalName)
 }
 
-func (e Entity) GetAttributeValue(attributeName string) (XrmType, bool) {
+func (e *Entity) GetAttributeValue(attributeName string) (interface{}, bool) {
 	return e.Contains(attributeName)
 }
 
-func (e Entity) Contains(attributeName string) (XrmType, bool) {
+func (e *Entity) Contains(attributeName string) (interface{}, bool) {
 	if val, ok := e.Attributes[attributeName]; ok {
 		return val, true
 	}
@@ -55,9 +55,13 @@ func (e Entity) Contains(attributeName string) (XrmType, bool) {
 	return XrmType{TypeName: "", IntValue: 0, HasValue: false, DecimalValue: 0, GuidValue: uuid.Nil, StringValue: "", DateValue: time.Time{}, LogicalName: "", Name: ""}, false
 }
 
-func NewEntity2(logicalName string, Id uuid.UUID) *Entity {
-	e := new(Entity)
-	e.Id = Id
-	e.LogicalName = logicalName
+func NewEntity(logicalName string, id string) Entity {
+	e := Entity{LogicalName: logicalName}
+	e.Attributes = make(map[string]interface{})
+	e.jProps = make(map[string]interface{})
+	e.FormattedValues = make(map[string]string)
+	if id == "" {
+		e.Id = Constants.GuidEmpty
+	}
 	return e
 }

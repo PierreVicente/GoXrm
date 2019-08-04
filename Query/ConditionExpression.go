@@ -7,7 +7,7 @@ type ConditionExpression struct {
 	Values        []interface{}
 }
 
-func NewConditionExpressionSingleValue(entityName string, attributeName string, conditionOperator int32, value interface{}) *ConditionExpression {
+func NewConditionExpressionSingleValue(entityName string, attributeName string, conditionOperator int32, value string) *ConditionExpression {
 	c := new(ConditionExpression)
 	c.EntityName = entityName
 	c.AttributeName = attributeName

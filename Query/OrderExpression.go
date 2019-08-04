@@ -5,6 +5,10 @@ type OrderExpression struct {
 	OrderType     int32
 }
 
-func NewOrderExperssion(attributeName string, orderType int32) OrderExpression {
-	return new(OrderExpression{AttributeName: attributeName, OrderType: orderType})
+func NewOrderExpression(attributeName string, orderType int32) OrderExpression {
+	var ord OrderExpression
+	ord.AttributeName = attributeName
+	ord.OrderType = orderType
+	return ord
+	//return new(OrderExpression{AttributeName: attributeName, OrderType: orderType})
 }

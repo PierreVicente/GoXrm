@@ -10,32 +10,30 @@ import (
 )
 
 func (qe *QueryExpression) ToFetchXml() string {
-	return qe.getFetchXmlString()
-}
 
-func (qe *QueryExpression) getFetchXmlString() string {
 	xdoc := qe.getFetchXmlDocument()
 	str, err := xdoc.WriteToString()
 	if err == nil {
 		return str
 	}
 	return ""
+
 }
 
 func (this *QueryExpression) getFetchXmlDocument() etree.Document {
 	fetchDoc := etree.NewDocument()
 	xmlFetch := fetchDoc.CreateElement("fetch")
-	fetchDoc.CreateAttr("version", "1.5")
-	fetchDoc.CreateAttr("output-format", "xml-platform")
-	fetchDoc.CreateAttr("mapping", "logical")
-	fetchDoc.CreateAttr("no-lock", strconv.FormatBool(this.NoLock))
+	xmlFetch.CreateAttr("version", "1.5")
+	xmlFetch.CreateAttr("output-format", "xml-platform")
+	xmlFetch.CreateAttr("mapping", "logical")
+	xmlFetch.CreateAttr("no-lock", strconv.FormatBool(this.NoLock))
 	if this.PageInfo.PagingCookie != "" {
 		xmlFetch.CreateAttr("paging-cookie", this.PageInfo.PagingCookie)
 	}
 
 	if !this.AggregateCount && !this.AggregateAvg && !this.AggregateSum {
-		xmlFetch.CreateAttr("page", string(this.PageInfo.PageNumber))
-		xmlFetch.CreateAttr("count", string(this.PageInfo.Count))
+		xmlFetch.CreateAttr("page", strconv.FormatInt(this.PageInfo.PageNumber, 10))
+		xmlFetch.CreateAttr("count", strconv.FormatInt(this.PageInfo.Count, 10))
 
 		if this.PageInfo.PagingCookie != "" {
 			xmlFetch.CreateAttr("paging-cookie", this.PageInfo.PagingCookie)
@@ -49,86 +47,109 @@ func (this *QueryExpression) getFetchXmlDocument() etree.Document {
 
 	xmlEntity := xmlFetch.CreateElement("entity")
 	xmlEntity.CreateAttr("name", strings.ToLower(this.EntityName))
+	//processAttributes(this.ColumnSet, xmlEntity, this.AggregateCount, this.AggregateAvg, this.AggregateAvg)
 
-	processAttributes(this.ColumnSet, xmlEntity, this.AggregateCount, this.AggregateAvg, this.AggregateAvg)
-
-	filterNode := xmlEntity.CreateElement("filter")
-
-	_t := "and"
-	switch this.Criteria.FilterOperator {
-	case LogicalOperator_Or:
-		_t = "or"
-		break
+	attributeNodes := processAttributes(this.ColumnSet, this.AggregateCount, this.AggregateAvg, this.AggregateAvg)
+	for _, attn := range attributeNodes {
+		xmlEntity.AddChild(attn.Copy())
 	}
 
-	filterNode.CreateAttr("type", _t)
+	//filterNode := xmlEntity.CreateElement("filter")
+	//_t := "and"
+	//switch this.Criteria.FilterOperator {
+	//case LogicalOperator_Or:
+	//	_t = "or"
+	//	break
+	//}
+	//filterNode.CreateAttr("type", _t)
 
-	processFilter(this.Criteria, filterNode)
+	if len(this.Criteria.Conditions) > 0 || len(this.Criteria.Filters) > 0 {
+		filterNode := processFilter(this.Criteria)
+		xmlEntity.AddChild(filterNode.Copy())
+	}
 
-	processOrders(this.Orders, xmlEntity)
+	orderNodes := processOrders(this.Orders)
+	for _, ordn := range orderNodes {
+		xmlEntity.AddChild(ordn.Copy())
+	}
 
 	for _, lke := range this.LinkEntities {
-		linkEntityNode := xmlEntity.CreateElement("link-entity")
-		processLinkEntity(lke, linkEntityNode, this.AggregateCount, this.AggregateAvg, this.AggregateAvg)
+		linkEntityNode := processLinkEntity(lke, this.AggregateCount, this.AggregateAvg, this.AggregateAvg)
+		xmlEntity.AddChild(linkEntityNode.Copy())
+
+		//linkEntityNode := xmlEntity.CreateElement("link-entity")
+		//processLinkEntity(lke, linkEntityNode, this.AggregateCount, this.AggregateAvg, this.AggregateAvg)
+
 	}
 
 	return *fetchDoc
 }
 
-func processOrders(orders []OrderExpression, entityNode *etree.Element) {
+func processOrders(orders []OrderExpression) []etree.Element {
+	var res []etree.Element
+
 	if orders == nil {
-		return
+		return res
 	}
 	if len(orders) == 0 {
-		return
+		return res
 	}
 
 	for _, oe := range orders {
-		orderNode := entityNode.CreateElement("order")
+		orderNode := etree.Element{Tag: "order"}
 		orderNode.CreateAttr("attribute", oe.AttributeName)
 		if oe.OrderType == OrderType_Descending {
 			orderNode.CreateAttr("descending", "true")
 		}
+		res = append(res, orderNode)
 	}
+	return res
 }
 
-func processAttributes(cols ColumnSet, pNode *etree.Element, aggregateCount bool, aggregateAvg bool, aggregateSum bool) {
+func processAttributes(cols ColumnSet, aggregateCount bool, aggregateAvg bool, aggregateSum bool) []etree.Element {
+	var res []etree.Element
+
 	if cols.AllColumns {
-		pNode.CreateElement("all-attributes")
-		return
+		res = append(res, etree.Element{Tag: "all-attributes"})
+		return res
 	}
 
 	for _, selfld := range cols.Colmuns {
 
 		if !aggregateCount && !aggregateAvg && !aggregateSum {
-			attrNode := pNode.CreateElement("attribute")
+			attrNode := etree.Element{Tag: "attribute"}
 			attrNode.CreateAttr("name", selfld)
+			res = append(res, attrNode)
 		}
 		if aggregateCount {
-			attrNode := pNode.CreateElement("attribute")
+			attrNode := etree.Element{Tag: "attribute"}
 			attrNode.CreateAttr("name", selfld)
 			attrNode.CreateAttr("aggregate", "count")
 			attrNode.CreateAttr("alias", selfld+"_count")
-			//pNode.AppendChild(attrNode);
+			res = append(res, attrNode)
 		}
 		if aggregateSum {
-			attrNode := pNode.CreateElement("attribute")
+			attrNode := etree.Element{Tag: "attribute"}
 			attrNode.CreateAttr("name", selfld)
 			attrNode.CreateAttr("aggregate", "sum")
 			attrNode.CreateAttr("alias", selfld+"_sum")
-			//pNode.AppendChild(attrNode);
+			res = append(res, attrNode)
 		}
 		if aggregateAvg {
-			attrNode := pNode.CreateElement("attribute")
+			attrNode := etree.Element{Tag: "attribute"}
 			attrNode.CreateAttr("name", selfld)
 			attrNode.CreateAttr("aggregate", "avg")
 			attrNode.CreateAttr("alias", selfld+"_avg")
-			//pNode.AppendChild(attrNode);
+			res = append(res, attrNode)
 		}
 	}
+	return res
 }
 
-func processLinkEntity(lkE LinkEntity, lkNode *etree.Element, aggregateCount bool, aggregateAvg bool, aggregateSum bool) {
+func processLinkEntity(lkE LinkEntity, aggregateCount bool, aggregateAvg bool, aggregateSum bool) etree.Element {
+
+	lkNode := etree.Element{Tag: "link-entity"}
+
 	lkNode.CreateAttr("name", strings.ToLower(lkE.LinkToEntityName))
 	lkNode.CreateAttr("from", strings.ToLower(lkE.LinkToAttributeName))
 	lkNode.CreateAttr("to", strings.ToLower(lkE.LinkFromAttributeName))
@@ -139,36 +160,39 @@ func processLinkEntity(lkE LinkEntity, lkNode *etree.Element, aggregateCount boo
 	} else {
 		alias = lkE.EntityAlias
 	}
-
 	lkNode.CreateAttr("alias", alias)
 
-	//if (!string.IsNullOrEmpty(_alias) && !aliasMap.ContainsKey(_alias))
-	//{
-	//    aliasMap.Add(_alias, lkE.LinkToEntityName.ToLower());
-	//}
+	attributeNodes := processAttributes(lkE.Columns, aggregateCount, aggregateAvg, aggregateSum)
+	for _, attn := range attributeNodes {
+		lkNode.AddChild(attn.Copy())
+	}
 
-	processAttributes(lkE.Columns, lkNode, aggregateCount, aggregateAvg, aggregateSum)
+	if len(lkE.LinkCriteria.Conditions) > 0 || len(lkE.LinkCriteria.Filters) > 0 {
+		filterNode := processFilter(lkE.LinkCriteria)
+		lkNode.AddChild(filterNode.Copy())
+	}
 
-	filterNode := lkNode.CreateElement("filter")
+	orderNodes := processOrders(lkE.Orders)
+	for _, ordn := range orderNodes {
+		lkNode.AddChild(ordn.Copy())
+	}
+
+	for _, lk2 := range lkE.LinkEntities {
+		lkEnode2 := processLinkEntity(lk2, aggregateCount, aggregateAvg, aggregateSum)
+		lkNode.AddChild(lkEnode2.Copy())
+	}
+	return lkNode
+}
+
+func processFilter(filter FilterExpression) etree.Element {
+	filterNode := etree.Element{Tag: "filter"}
+
 	t := "and"
-	if lkE.LinkCriteria.FilterOperator == LogicalOperator_Or {
+	if filter.FilterOperator == LogicalOperator_Or {
 		t = "or"
 	}
 	filterNode.CreateAttr("type", t)
 
-	processFilter(lkE.LinkCriteria, filterNode)
-	//lkNode.AppendChild(filterNode);
-
-	processOrders(lkE.Orders, lkNode)
-
-	for _, lk2 := range lkE.LinkEntities {
-		lkEnode2 := lkNode.CreateElement("link-entity")
-		processLinkEntity(lk2, lkEnode2, aggregateCount, aggregateAvg, aggregateSum)
-		//lkNode.AppendChild(lkEnode2);
-	}
-}
-
-func processFilter(filter FilterExpression, filterNode *etree.Element) {
 	for _, condexpr := range filter.Conditions {
 
 		conditionxml := filterNode.CreateElement("condition")
@@ -200,16 +224,14 @@ func processFilter(filter FilterExpression, filterNode *etree.Element) {
 		}
 
 		for _, chldFilter := range filter.Filters {
-			newFilter := filterNode.CreateElement("filter")
-			v := "and"
-			if chldFilter.FilterOperator == LogicalOperator_Or {
-				v = "or"
-			}
-			newFilter.CreateAttr("type", v)
 
-			processFilter(chldFilter, newFilter)
+			if len(chldFilter.Conditions) > 0 || len(chldFilter.Filters) > 0 {
+				newFilter2 := processFilter(chldFilter)
+				filterNode.AddChild(newFilter2.Copy())
+			}
 		}
 	}
+	return filterNode
 }
 
 func getOperatorString(operatorType int32) string {
@@ -293,8 +315,6 @@ func getOperatorString(operatorType int32) string {
 		return "last-x-months"
 	case ConditionOperator_NextXMonths:
 		return "next-x-months"
-	case ConditionOperator_OlderThanXMonths:
-		return "olderthan-x-months"
 	case ConditionOperator_LastXYears:
 		return "last-x-years"
 	case ConditionOperator_NextXYears:
@@ -305,6 +325,22 @@ func getOperatorString(operatorType int32) string {
 		return "ne-userid"
 	case ConditionOperator_EqualUserTeams:
 		return "eq-userteams"
+	case ConditionOperator_EqualUserOrUserTeams:
+		return "eq-useroruserteamsteams"
+	case ConditionOperator_Under:
+		return "under"
+	case ConditionOperator_UnderOrEqual:
+		return "eq-or-under"
+	case ConditionOperator_NotUnder:
+		return "not-under"
+	case ConditionOperator_Above:
+		return "above"
+	case ConditionOperator_AboveOrEqual:
+		return "eq-or-above"
+	case ConditionOperator_EqualUserOrUserHierarchy:
+		return "eq-useroruserhierarchy"
+	case ConditionOperator_EqualUserOrUserHierarchyAndTeams:
+		return "eq-useroruserhierarchyandteams"
 	case ConditionOperator_EqualBusinessId:
 		return "eq-businessid"
 	case ConditionOperator_NotEqualBusinessId:
@@ -349,6 +385,22 @@ func getOperatorString(operatorType int32) string {
 		return "ends-with"
 	case ConditionOperator_DoesNotEndWith:
 		return "not-end-with"
+	case ConditionOperator_OlderThanXMonths:
+		return "olderthan-x-months"
+	case ConditionOperator_OlderThanXYears:
+		return "olderthan-x-years"
+	case ConditionOperator_OlderThanXWeeks:
+		return "olderthan-x-weeks"
+	case ConditionOperator_OlderThanXDays:
+		return "olderthan-x-days"
+	case ConditionOperator_OlderThanXHours:
+		return "olderthan-x-hours"
+	case ConditionOperator_OlderThanXMinutes:
+		return "olderthan-x-minutes"
+	case ConditionOperator_ContainValues:
+		return "contain-values"
+	case ConditionOperator_DoesNotContainValues:
+		return "not-contain-values"
 	}
 	return "Not supported operator by this library"
 
