@@ -147,3 +147,45 @@ func (this *CrmServiceClient) RetrieveMultiple(query Query.QueryExpression) GoXr
 
 	return res
 }
+
+func (this *CrmServiceClient) RetrieveAllRecords(query Query.QueryExpression) GoXrm.EntityCollection {
+	res := GoXrm.NewEntityCollection2(query.EntityName)
+	var ec GoXrm.EntityCollection
+
+	for {
+		ec = this.RetrieveMultiple(query)
+		for _, e := range ec.Entities {
+			res.Entities = append(res.Entities, e)
+		}
+		if !ec.MoreRecords {
+			break
+		}
+	}
+	return res
+}
+
+func (this *CrmServiceClient) RetrieveWithRM(logicalName string, id string, columnSet Query.ColumnSet) GoXrm.Entity {
+
+	qe := Query.QueryExpression{
+		EntityName: logicalName,
+		NoLock:     true,
+		ColumnSet:  columnSet,
+		Criteria: Query.FilterExpression{
+			FilterOperator: Query.LogicalOperator_And,
+			Conditions: []Query.ConditionExpression{
+				Query.ConditionExpression{
+					AttributeName: GoXrm.GetPrimaryIdAttribute(logicalName),
+					Operator:      Query.ConditionOperator_Equal,
+					Values:        []interface{}{id},
+				},
+			},
+		},
+	}
+
+	ec := this.RetrieveMultiple(qe)
+	if len(ec.Entities) > 0 {
+		return ec.Entities[0]
+	}
+
+	return GoXrm.Entity{}
+}

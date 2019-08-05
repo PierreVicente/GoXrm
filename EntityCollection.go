@@ -14,13 +14,13 @@ type EntityCollection struct {
 	TotalRecordCountLimitExceeded bool
 }
 
-func NewEntityCollection0() *EntityCollection {
-	e := new(EntityCollection)
+func NewEntityCollection0() EntityCollection {
+	e := EntityCollection{}
 	e.Entities = make([]Entity, 0)
 	return e
 }
 
-func NewEntityCollection2(entityName string) *EntityCollection {
+func NewEntityCollection2(entityName string) EntityCollection {
 	e := NewEntityCollection0()
 	e.EntityName = entityName
 	return e
