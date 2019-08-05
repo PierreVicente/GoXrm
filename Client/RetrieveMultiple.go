@@ -94,7 +94,7 @@ func (this *CrmServiceClient) RetrieveMultiple(query Query.QueryExpression) GoXr
 
 	bjs := []byte(r1)
 
-	jsonNodebArr, valtype, offset, err4 := jsonparser.Get(bjs, "@Microsoft.Dynamics.CRM.fetchxmlpagingcookie")
+	jsonNodebArr, _, _, err4 := jsonparser.Get(bjs, "@Microsoft.Dynamics.CRM.fetchxmlpagingcookie")
 	if err4 != nil {
 		panic(err4)
 	}
@@ -119,7 +119,7 @@ func (this *CrmServiceClient) RetrieveMultiple(query Query.QueryExpression) GoXr
 	}
 	jsonNodebArr = nil
 
-	jsonNodebArr, valtype, offset, err4 = jsonparser.Get(bjs, "@Microsoft.Dynamics.CRM.totalrecordcount")
+	jsonNodebArr, _, _, err4 = jsonparser.Get(bjs, "@Microsoft.Dynamics.CRM.totalrecordcount")
 	if err4 != nil {
 		panic(err4)
 	}
@@ -129,7 +129,7 @@ func (this *CrmServiceClient) RetrieveMultiple(query Query.QueryExpression) GoXr
 
 	jsonNodebArr = nil
 
-	jsonNodebArr, valtype, offset, err4 = jsonparser.Get(bjs, "@Microsoft.Dynamics.CRM.totalrecordcountlimitexceeded")
+	jsonNodebArr, _, _, err4 = jsonparser.Get(bjs, "@Microsoft.Dynamics.CRM.totalrecordcountlimitexceeded")
 	if err4 != nil {
 		panic(err4)
 	}
@@ -141,21 +141,9 @@ func (this *CrmServiceClient) RetrieveMultiple(query Query.QueryExpression) GoXr
 		res.TotalRecordCountLimitExceeded = b1 //, _ = strconv.ParseBool(string(jsonNodebArr))
 	}
 
-	jsonNodebArr, valtype, offset, err4 = jsonparser.Get(bjs, "value")
+	jsonNodebArr, _, _, err4 = jsonparser.Get(bjs, "value")
 
 	res.FillEntities(jsonNodebArr)
-
-	vt := valtype.String()
-	vt += ""
-	offset += 0
-
-	//err3 := json.Unmarshal([]byte(r1), v)
-	//if (err3 != nil){
-	//	panic (err3)
-	//}
-
-	toto := "toto"
-	toto += "r"
 
 	return res
 }
