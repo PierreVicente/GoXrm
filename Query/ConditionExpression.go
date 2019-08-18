@@ -7,20 +7,22 @@ type ConditionExpression struct {
 	Values        []interface{}
 }
 
-func NewConditionExpressionSingleValue(entityName string, attributeName string, conditionOperator int, value string) *ConditionExpression {
-	c := new(ConditionExpression)
-	c.EntityName = entityName
-	c.AttributeName = attributeName
-	c.Operator = conditionOperator
-	c.Values = append(c.Values, value)
+func NewConditionExpressionSingleValue(entityName string, attributeName string, conditionOperator int, value string) ConditionExpression {
+	c := ConditionExpression{
+		EntityName:    entityName,
+		AttributeName: attributeName,
+		Operator:      conditionOperator,
+	}
+	c.Values = append(make([]interface{}, 0), value)
 	return c
 }
 
-func NewConditionExpressionMultipleValues(entityName string, attributeName string, conditionOperator int, values []interface{}) *ConditionExpression {
-	c := new(ConditionExpression)
-	c.EntityName = entityName
-	c.AttributeName = attributeName
-	c.Operator = conditionOperator
-	c.Values = values
+func NewConditionExpressionMultipleValues(entityName string, attributeName string, conditionOperator int, values []interface{}) ConditionExpression {
+	c := ConditionExpression{
+		EntityName:    entityName,
+		AttributeName: attributeName,
+		Operator:      conditionOperator,
+		Values:        values,
+	}
 	return c
 }

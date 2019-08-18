@@ -18,6 +18,6 @@ func (filter *FilterExpression) AddCondition(entityName string, attributename st
 	cnd.Values = values
 	cnd.EntityName = entityName
 	cnd.AttributeName = attributename
-	cnd.Operator = conditionOperator
+	cnd.Operator = ConditionOperator_Equal
 	filter.Conditions = append(filter.Conditions, cnd)
 }

@@ -2,7 +2,6 @@ package Client
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/PierreVicente/GoXrm"
 	"github.com/PierreVicente/GoXrm/AADAuth"
 	"github.com/google/uuid"
@@ -16,7 +15,7 @@ func (this *CrmServiceClient) Create(target GoXrm.Entity) string {
 
 	jo := GoXrm.EntityToJObject(target, "C", false)
 
-	body := jo.ToString()
+	body := jo
 	stringContent := []byte(body)
 	req, err := http.NewRequest("POST", baseUrl+relativeUrl, bytes.NewBuffer(stringContent))
 

@@ -234,7 +234,7 @@ func processFilter(filter FilterExpression) etree.Element {
 	return filterNode
 }
 
-func getOperatorString(operatorType int32) string {
+func getOperatorString(operatorType int) string {
 
 	switch operatorType {
 	case ConditionOperator_Equal:
