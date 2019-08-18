@@ -1,6 +1,7 @@
 package GoXrm
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/PierreVicente/GoXrm/Constants"
 	"github.com/PierreVicente/GoXrm/Metadata"
@@ -123,7 +124,7 @@ func JObjectToEntity(o []byte, entityName string) Entity {
 	return e
 }
 
-func EntityToJObject(target Entity, action string, isActivityEntity bool) {
+func EntityToJObject(target Entity, action string, isActivityEntity bool) string {
 
 	jo := make(map[string]interface{})
 
@@ -154,8 +155,17 @@ func EntityToJObject(target Entity, action string, isActivityEntity bool) {
 			}
 			jo[attr+suffix+"@odata.bind"] = "/" + getCollectionSchemaName(refEntityName) + "(" + fmt.Sprintf("%v", val)
 		} else {
-
+			jo[attr] = val
 		}
 	}
 
+	var res []byte
+
+	res, err := json.Marshal(jo)
+
+	if err == nil {
+		return string(res)
+	}
+
+	panic(err)
 }
