@@ -22,8 +22,8 @@ type CrmServiceClient struct {
 
 const defaultApiVersion = "9.1"
 
-func (this *CrmServiceClient) SetAadAuthResult(AadAuthResult *AADAuth.AADAuthResult) {
-	this.aadAuthResult = *AadAuthResult
+func (this *CrmServiceClient) SetAadAuthResult(AadAuthResult AADAuth.AADAuthResult) {
+	this.aadAuthResult = AadAuthResult
 }
 
 func (this *CrmServiceClient) GetAadAuthResult() AADAuth.AADAuthResult {
@@ -33,7 +33,7 @@ func (this *CrmServiceClient) GetAadAuthResult() AADAuth.AADAuthResult {
 		exp := time.Unix(iexp, 0)
 		diff := exp.Sub(time.Now().UTC())
 		if diff.Minutes() < 2 {
-			refrsh := new(AADAuth.AADAuthResult)
+			refrsh := AADAuth.AADAuthResult{}
 
 			if this.aadAuthResult.RefreshToken != "" {
 				refrsh = AADAuth.RenewToken(this.loginUrl, this.tenantId, this.clientId, this.resourceUrl, this.aadAuthResult.RefreshToken)
@@ -69,40 +69,42 @@ func (this *CrmServiceClient) GetAadAuthResult() AADAuth.AADAuthResult {
 	panic("not supported auth")
 }
 
-func NewCrmServiceClientAadAuth(authObject *AADAuth.AADAuthResult) *CrmServiceClient {
-	srv := new(CrmServiceClient)
+func NewCrmServiceClientAadAuth(authObject AADAuth.AADAuthResult) CrmServiceClient {
+	srv := CrmServiceClient{}
 	srv.SetAadAuthResult(authObject)
 	srv.ApiVersion = defaultApiVersion
 	return srv
 }
 
-func NewCrmServiceClientPassword(_loginUrl string, _tenantId uuid.UUID, _clientId uuid.UUID, _resourceUrl string, _userName string, _password string) *CrmServiceClient {
-	srv := new(CrmServiceClient)
-	srv.loginUrl = _loginUrl
-	srv.tenantId = _tenantId
-	srv.clientId = _clientId
-	srv.resourceUrl = _resourceUrl
-	srv.userName = _userName
-	srv.password = _password
-	srv.ApiVersion = defaultApiVersion
-	srv.SetAadAuthResult(AADAuth.AADAuthenticateWithPassword(_loginUrl, _tenantId, _clientId, _resourceUrl, _userName, _password))
+func NewCrmServiceClientPassword(_loginUrl string, _tenantId uuid.UUID, _clientId uuid.UUID, _resourceUrl string, _userName string, _password string) CrmServiceClient {
+	srv := CrmServiceClient{
+		loginUrl:    _loginUrl,
+		tenantId:    _tenantId,
+		clientId:    _clientId,
+		resourceUrl: _resourceUrl,
+		userName:    _userName,
+		password:    _password,
+		ApiVersion:  defaultApiVersion,
+	}
+	srv.aadAuthResult = AADAuth.AADAuthenticateWithPassword(_loginUrl, _tenantId, _clientId, _resourceUrl, _userName, _password)
 	return srv
 }
 
-func NewCrmServiceClientSecret(_loginUrl string, _tenantId uuid.UUID, _clientId uuid.UUID, _resourceUrl string, _secret string) *CrmServiceClient {
-	srv := new(CrmServiceClient)
-	srv.loginUrl = _loginUrl
-	srv.tenantId = _tenantId
-	srv.clientId = _clientId
-	srv.resourceUrl = _resourceUrl
-	srv.secret = _secret
-	srv.ApiVersion = defaultApiVersion
-	srv.SetAadAuthResult(AADAuth.AADAuthenticateWithSecret(_loginUrl, _tenantId, _clientId, _resourceUrl, _secret))
+func NewCrmServiceClientSecret(_loginUrl string, _tenantId uuid.UUID, _clientId uuid.UUID, _resourceUrl string, _secret string) CrmServiceClient {
+	srv := CrmServiceClient{
+		loginUrl:      _loginUrl,
+		tenantId:      _tenantId,
+		clientId:      _clientId,
+		resourceUrl:   _resourceUrl,
+		secret:        _secret,
+		ApiVersion:    defaultApiVersion,
+		aadAuthResult: AADAuth.AADAuthenticateWithSecret(_loginUrl, _tenantId, _clientId, _resourceUrl, _secret),
+	}
 	return srv
 }
 
-func NewCrmServiceClientRefreshToken(_loginUrl string, _resourceUrl string, _tenantId uuid.UUID, _clientId uuid.UUID, _refreshToken string) *CrmServiceClient {
-	srv := new(CrmServiceClient)
+func NewCrmServiceClientRefreshToken(_loginUrl string, _resourceUrl string, _tenantId uuid.UUID, _clientId uuid.UUID, _refreshToken string) CrmServiceClient {
+	srv := CrmServiceClient{}
 	srv.loginUrl = _loginUrl
 	srv.tenantId = _tenantId
 	srv.clientId = _clientId

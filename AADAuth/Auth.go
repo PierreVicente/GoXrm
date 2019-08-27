@@ -10,10 +10,10 @@ import (
 	"strings"
 )
 
-func AADAuthenticateWithSecret(loginUrl string, tenantId uuid.UUID, clientId uuid.UUID, resourceUrl string, secret string) *AADAuthResult {
+func AADAuthenticateWithSecret(loginUrl string, tenantId uuid.UUID, clientId uuid.UUID, resourceUrl string, secret string) AADAuthResult {
 
 	tokenEndpoint := loginUrl
-	if strings.HasSuffix(tokenEndpoint, "/") {
+	if !strings.HasSuffix(tokenEndpoint, "/") {
 		tokenEndpoint += "/"
 	}
 
@@ -41,7 +41,7 @@ func AADAuthenticateWithSecret(loginUrl string, tenantId uuid.UUID, clientId uui
 
 	rbody, _ := ioutil.ReadAll(resp.Body)
 
-	aada := new(AADAuthResult)
+	aada := AADAuthResult{}
 	err3 := json.Unmarshal(rbody, &aada)
 	if err3 != nil {
 		panic(err3)
@@ -54,7 +54,7 @@ func AADAuthenticateWithSecret(loginUrl string, tenantId uuid.UUID, clientId uui
 
 }
 
-func AADAuthenticateWithPassword(loginUrl string, tenantId uuid.UUID, clientId uuid.UUID, resourceUrl, userName, password string) *AADAuthResult {
+func AADAuthenticateWithPassword(loginUrl string, tenantId uuid.UUID, clientId uuid.UUID, resourceUrl, userName, password string) AADAuthResult {
 
 	var tokenEndpoint = loginUrl
 	if !strings.HasSuffix(tokenEndpoint, "/") {
@@ -86,7 +86,7 @@ func AADAuthenticateWithPassword(loginUrl string, tenantId uuid.UUID, clientId u
 
 	rbody, _ := ioutil.ReadAll(resp.Body)
 
-	aada := new(AADAuthResult)
+	aada := AADAuthResult{}
 	err3 := json.Unmarshal(rbody, &aada)
 	if err3 != nil {
 		panic(err3)
@@ -99,7 +99,7 @@ func AADAuthenticateWithPassword(loginUrl string, tenantId uuid.UUID, clientId u
 
 }
 
-func RenewToken(loginUrl string, tenantId uuid.UUID, clientId uuid.UUID, resourceUrl, rToken string) *AADAuthResult {
+func RenewToken(loginUrl string, tenantId uuid.UUID, clientId uuid.UUID, resourceUrl, rToken string) AADAuthResult {
 
 	var tokenEndpoint = loginUrl
 	if !strings.HasSuffix(tokenEndpoint, "/") {
@@ -129,7 +129,7 @@ func RenewToken(loginUrl string, tenantId uuid.UUID, clientId uuid.UUID, resourc
 
 	rbody, _ := ioutil.ReadAll(resp.Body)
 
-	var aada = new(AADAuthResult)
+	var aada = AADAuthResult{}
 	err3 := json.Unmarshal(rbody, &aada)
 	if err3 != nil {
 		panic(err3)
