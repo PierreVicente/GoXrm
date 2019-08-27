@@ -12,8 +12,8 @@ type CrmServiceClient struct {
 	ApiVersion    string
 	aadAuthResult AADAuth.AADAuthResult
 	loginUrl      string
-	tenantId      uuid.UUID
-	clientId      uuid.UUID
+	tenantId      string
+	clientId      string
 	resourceUrl   string
 	userName      string
 	password      string
@@ -76,7 +76,7 @@ func NewCrmServiceClientAadAuth(authObject AADAuth.AADAuthResult) CrmServiceClie
 	return srv
 }
 
-func NewCrmServiceClientPassword(_loginUrl string, _tenantId uuid.UUID, _clientId uuid.UUID, _resourceUrl string, _userName string, _password string) CrmServiceClient {
+func NewCrmServiceClientPassword(_loginUrl string, _tenantId string, _clientId string, _resourceUrl string, _userName string, _password string) CrmServiceClient {
 	srv := CrmServiceClient{
 		loginUrl:    _loginUrl,
 		tenantId:    _tenantId,
@@ -90,7 +90,7 @@ func NewCrmServiceClientPassword(_loginUrl string, _tenantId uuid.UUID, _clientI
 	return srv
 }
 
-func NewCrmServiceClientSecret(_loginUrl string, _tenantId uuid.UUID, _clientId uuid.UUID, _resourceUrl string, _secret string) CrmServiceClient {
+func NewCrmServiceClientSecret(_loginUrl string, _tenantId string, _clientId string, _resourceUrl string, _secret string) CrmServiceClient {
 	srv := CrmServiceClient{
 		loginUrl:      _loginUrl,
 		tenantId:      _tenantId,
@@ -103,7 +103,7 @@ func NewCrmServiceClientSecret(_loginUrl string, _tenantId uuid.UUID, _clientId 
 	return srv
 }
 
-func NewCrmServiceClientRefreshToken(_loginUrl string, _resourceUrl string, _tenantId uuid.UUID, _clientId uuid.UUID, _refreshToken string) CrmServiceClient {
+func NewCrmServiceClientRefreshToken(_loginUrl string, _resourceUrl string, _tenantId string, _clientId string, _refreshToken string) CrmServiceClient {
 	srv := CrmServiceClient{}
 	srv.loginUrl = _loginUrl
 	srv.tenantId = _tenantId

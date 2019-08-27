@@ -3,24 +3,24 @@ package AADAuth
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/google/uuid"
+	//"github.com/google/uuid"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
-func AADAuthenticateWithSecret(loginUrl string, tenantId uuid.UUID, clientId uuid.UUID, resourceUrl string, secret string) AADAuthResult {
+func AADAuthenticateWithSecret(loginUrl string, tenantId string, clientId string, resourceUrl string, secret string) AADAuthResult {
 
 	tokenEndpoint := loginUrl
 	if !strings.HasSuffix(tokenEndpoint, "/") {
 		tokenEndpoint += "/"
 	}
 
-	tokenEndpoint += tenantId.String() + "/oauth2/token"
+	tokenEndpoint += tenantId + "/oauth2/token"
 
 	var body = "resource=" + url.QueryEscape(resourceUrl) + "&"
-	body += "client_id=" + clientId.String() + "&"
+	body += "client_id=" + clientId + "&"
 	body += "grant_type=client_credentials" + "&"
 	body += "client_secret=" + url.QueryEscape(secret)
 
@@ -54,16 +54,16 @@ func AADAuthenticateWithSecret(loginUrl string, tenantId uuid.UUID, clientId uui
 
 }
 
-func AADAuthenticateWithPassword(loginUrl string, tenantId uuid.UUID, clientId uuid.UUID, resourceUrl, userName, password string) AADAuthResult {
+func AADAuthenticateWithPassword(loginUrl string, tenantId string, clientId string, resourceUrl, userName, password string) AADAuthResult {
 
 	var tokenEndpoint = loginUrl
 	if !strings.HasSuffix(tokenEndpoint, "/") {
 		tokenEndpoint += "/"
 	}
-	tokenEndpoint += tenantId.String() + "/oauth2/token"
+	tokenEndpoint += tenantId + "/oauth2/token"
 	//https://login.microsoftonline.com/065377e9-ac15-4669-9c10-c5e2b3848e99/oauth2/token";
 	var body = "resource=" + url.QueryEscape(resourceUrl) + "&"
-	body += "client_id=" + clientId.String() + "&"
+	body += "client_id=" + clientId + "&"
 	body += "grant_type=password" + "&"
 	body += "username=" + url.QueryEscape(userName) + "&"
 	body += "password=" + url.QueryEscape(password)
@@ -99,16 +99,16 @@ func AADAuthenticateWithPassword(loginUrl string, tenantId uuid.UUID, clientId u
 
 }
 
-func RenewToken(loginUrl string, tenantId uuid.UUID, clientId uuid.UUID, resourceUrl, rToken string) AADAuthResult {
+func RenewToken(loginUrl string, tenantId string, clientId string, resourceUrl, rToken string) AADAuthResult {
 
 	var tokenEndpoint = loginUrl
 	if !strings.HasSuffix(tokenEndpoint, "/") {
 		tokenEndpoint += "/"
 	}
-	tokenEndpoint += tenantId.String() + "/oauth2/token"
+	tokenEndpoint += tenantId + "/oauth2/token"
 	//https://login.microsoftonline.com/065377e9-ac15-4669-9c10-c5e2b3848e99/oauth2/token";
 	var body = "resource=" + url.QueryEscape(resourceUrl) + "&"
-	body += "client_id=" + clientId.String() + "&"
+	body += "client_id=" + clientId + "&"
 	body += "grant_type=refresh_token" + "&"
 	body += "refresh_token=" + rToken
 
