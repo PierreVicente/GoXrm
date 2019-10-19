@@ -48,3 +48,7 @@ func NewEntity(logicalName string, id string) Entity {
 	}
 	return e
 }
+
+func (e *Entity) ToEntityReference() EntityReference {
+	return NewEntityReference(e.LogicalName, e.Id)
+}
