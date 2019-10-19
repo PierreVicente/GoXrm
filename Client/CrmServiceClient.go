@@ -42,11 +42,11 @@ func (this *CrmServiceClient) GetAadAuthResult() AADAuth.AADAuthResult {
 			if refrsh.RefreshToken == "" {
 				switch this.aadAuthResult.AuthMode {
 				case AADAuth.AuthMode_Password:
-					refrsh = AADAuth.AADAuthenticateWithPassword(this.loginUrl, this.tenantId, this.clientId,
+					refrsh, _ = AADAuth.AADAuthenticateWithPassword(this.loginUrl, this.tenantId, this.clientId,
 						this.resourceUrl, this.userName, this.password)
 					break
 				case AADAuth.AuthMode_Secret:
-					refrsh = AADAuth.AADAuthenticateWithSecret(this.loginUrl, this.tenantId, this.clientId,
+					refrsh, _ = AADAuth.AADAuthenticateWithSecret(this.loginUrl, this.tenantId, this.clientId,
 						this.resourceUrl, this.secret)
 					break
 				}
@@ -76,31 +76,34 @@ func NewCrmServiceClientAadAuth(authObject AADAuth.AADAuthResult) CrmServiceClie
 	return srv
 }
 
-func NewCrmServiceClientPassword(_loginUrl string, _tenantId string, _clientId string, _resourceUrl string, _userName string, _password string) CrmServiceClient {
+func NewCrmServiceClientPassword(_loginUrl string, _tenantId string, _clientId string, _resourceUrl string, _userName string, _password string) (CrmServiceClient, error) {
 	srv := CrmServiceClient{
-		loginUrl:      _loginUrl,
-		tenantId:      _tenantId,
-		clientId:      _clientId,
-		resourceUrl:   _resourceUrl,
-		userName:      _userName,
-		password:      _password,
-		ApiVersion:    defaultApiVersion,
-		aadAuthResult: AADAuth.AADAuthenticateWithPassword(_loginUrl, _tenantId, _clientId, _resourceUrl, _userName, _password),
+		loginUrl:    _loginUrl,
+		tenantId:    _tenantId,
+		clientId:    _clientId,
+		resourceUrl: _resourceUrl,
+		userName:    _userName,
+		password:    _password,
+		ApiVersion:  defaultApiVersion,
 	}
-	return srv
+	aadar, err := AADAuth.AADAuthenticateWithPassword(_loginUrl, _tenantId, _clientId, _resourceUrl, _userName, _password)
+	srv.aadAuthResult = aadar
+
+	return srv, err
 }
 
-func NewCrmServiceClientSecret(_loginUrl string, _tenantId string, _clientId string, _resourceUrl string, _secret string) CrmServiceClient {
+func NewCrmServiceClientSecret(_loginUrl string, _tenantId string, _clientId string, _resourceUrl string, _secret string) (CrmServiceClient, error) {
 	srv := CrmServiceClient{
-		loginUrl:      _loginUrl,
-		tenantId:      _tenantId,
-		clientId:      _clientId,
-		resourceUrl:   _resourceUrl,
-		secret:        _secret,
-		ApiVersion:    defaultApiVersion,
-		aadAuthResult: AADAuth.AADAuthenticateWithSecret(_loginUrl, _tenantId, _clientId, _resourceUrl, _secret),
+		loginUrl:    _loginUrl,
+		tenantId:    _tenantId,
+		clientId:    _clientId,
+		resourceUrl: _resourceUrl,
+		secret:      _secret,
+		ApiVersion:  defaultApiVersion,
 	}
-	return srv
+	aadar, err := AADAuth.AADAuthenticateWithSecret(_loginUrl, _tenantId, _clientId, _resourceUrl, _secret)
+	srv.aadAuthResult = aadar
+	return srv, err
 }
 
 func NewCrmServiceClientRefreshToken(_loginUrl string, _resourceUrl string, _tenantId string, _clientId string, _refreshToken string) CrmServiceClient {
