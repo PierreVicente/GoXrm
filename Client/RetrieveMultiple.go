@@ -4,16 +4,17 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/PierreVicente/GoXrm"
-	"github.com/PierreVicente/GoXrm/AADAuth"
-	"github.com/PierreVicente/GoXrm/Query"
-	"github.com/buger/jsonparser"
-	"github.com/google/uuid"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/PierreVicente/GoXrm"
+	"github.com/PierreVicente/GoXrm/AADAuth"
+	"github.com/PierreVicente/GoXrm/Query"
+	"github.com/buger/jsonparser"
+	"github.com/google/uuid"
 )
 
 type RMRaw struct {
@@ -180,7 +181,7 @@ func (this *CrmServiceClient) RetrieveAllRecords(query Query.QueryExpression) (G
 		if !ec.MoreRecords {
 			break
 		}
-		query.PageInfo.PageNumber++
+		query.PageInfo.PageNumber = ec.NextPage
 		query.PageInfo.PagingCookie = ec.PagingCookie
 	}
 	return res, retErr
