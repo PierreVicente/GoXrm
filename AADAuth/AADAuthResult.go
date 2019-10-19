@@ -22,6 +22,9 @@ type AADAuthResult struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 
+	Error            string `json:"error"`
+	ErrorDescription string `json:"error_description"`
+
 	AuthType int32
 	AuthMode int32
 

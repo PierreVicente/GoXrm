@@ -78,15 +78,15 @@ func NewCrmServiceClientAadAuth(authObject AADAuth.AADAuthResult) CrmServiceClie
 
 func NewCrmServiceClientPassword(_loginUrl string, _tenantId string, _clientId string, _resourceUrl string, _userName string, _password string) CrmServiceClient {
 	srv := CrmServiceClient{
-		loginUrl:    _loginUrl,
-		tenantId:    _tenantId,
-		clientId:    _clientId,
-		resourceUrl: _resourceUrl,
-		userName:    _userName,
-		password:    _password,
-		ApiVersion:  defaultApiVersion,
+		loginUrl:      _loginUrl,
+		tenantId:      _tenantId,
+		clientId:      _clientId,
+		resourceUrl:   _resourceUrl,
+		userName:      _userName,
+		password:      _password,
+		ApiVersion:    defaultApiVersion,
+		aadAuthResult: AADAuth.AADAuthenticateWithPassword(_loginUrl, _tenantId, _clientId, _resourceUrl, _userName, _password),
 	}
-	srv.aadAuthResult = AADAuth.AADAuthenticateWithPassword(_loginUrl, _tenantId, _clientId, _resourceUrl, _userName, _password)
 	return srv
 }
 

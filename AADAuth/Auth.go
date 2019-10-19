@@ -3,6 +3,8 @@ package AADAuth
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+
 	//"github.com/google/uuid"
 	"io/ioutil"
 	"net/http"
@@ -10,7 +12,9 @@ import (
 	"strings"
 )
 
-func AADAuthenticateWithSecret(loginUrl string, tenantId string, clientId string, resourceUrl string, secret string) AADAuthResult {
+func AADAuthenticateWithSecret(loginUrl string, tenantId string, clientId string, resourceUrl string, secret string) (AADAuthResult, error) {
+
+	var returnedError error = nil
 
 	tokenEndpoint := loginUrl
 	if !strings.HasSuffix(tokenEndpoint, "/") {
@@ -28,14 +32,14 @@ func AADAuthenticateWithSecret(loginUrl string, tenantId string, clientId string
 
 	req, err := http.NewRequest("POST", tokenEndpoint, bytes.NewBuffer(stringContent))
 	if err != nil {
-		panic(err)
+		returnedError = err
 	}
 	req.Header.Set("Content-TYpe", "application/x-www-form-urlencoded")
 
 	client := &http.Client{}
 	var resp, err2 = client.Do(req)
 	if err2 != nil {
-		panic(err2)
+		returnedError = err2
 	}
 	defer resp.Body.Close()
 
@@ -44,17 +48,23 @@ func AADAuthenticateWithSecret(loginUrl string, tenantId string, clientId string
 	aada := AADAuthResult{}
 	err3 := json.Unmarshal(rbody, &aada)
 	if err3 != nil {
-		panic(err3)
+		returnedError = err3
+	}
+
+	if aada.Error != "" {
+		returnedError = errors.New("Error:" + aada.Error + "\n" + "Description:" + aada.ErrorDescription)
 	}
 
 	aada.AuthMode = AuthMode_Secret
 	aada.AuthType = AuthType_Office365
 
-	return aada
+	return aada, returnedError
 
 }
 
-func AADAuthenticateWithPassword(loginUrl string, tenantId string, clientId string, resourceUrl, userName, password string) AADAuthResult {
+func AADAuthenticateWithPassword(loginUrl string, tenantId string, clientId string, resourceUrl, userName, password string) (AADAuthResult, error) {
+
+	var returnedError error = nil
 
 	var tokenEndpoint = loginUrl
 	if !strings.HasSuffix(tokenEndpoint, "/") {
@@ -73,14 +83,14 @@ func AADAuthenticateWithPassword(loginUrl string, tenantId string, clientId stri
 
 	req, err := http.NewRequest("POST", tokenEndpoint, bytes.NewBuffer(stringContent))
 	if err != nil {
-		panic(err)
+		returnedError = err
 	}
 	req.Header.Set("Content-TYpe", "application/x-www-form-urlencoded")
 
 	client := &http.Client{}
 	var resp, err2 = client.Do(req)
 	if err2 != nil {
-		panic(err2)
+		returnedError = err2
 	}
 	defer resp.Body.Close()
 
@@ -89,13 +99,17 @@ func AADAuthenticateWithPassword(loginUrl string, tenantId string, clientId stri
 	aada := AADAuthResult{}
 	err3 := json.Unmarshal(rbody, &aada)
 	if err3 != nil {
-		panic(err3)
+		returnedError = err3
+	}
+
+	if aada.Error != "" {
+		returnedError = errors.New("Error:" + aada.Error + "\n" + "Description:" + aada.ErrorDescription)
 	}
 
 	aada.AuthMode = AuthMode_Password
 	aada.AuthType = AuthType_Office365
 
-	return aada
+	return aada, returnedError
 
 }
 
