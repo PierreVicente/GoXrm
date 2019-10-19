@@ -2,6 +2,7 @@ package Client
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"github.com/PierreVicente/GoXrm"
 	"github.com/PierreVicente/GoXrm/AADAuth"
@@ -24,7 +25,9 @@ type RMRaw struct {
 	Value                         interface{} `json "value"`
 }
 
-func (this *CrmServiceClient) RetrieveMultiple(query Query.QueryExpression) GoXrm.EntityCollection {
+func (this *CrmServiceClient) RetrieveMultiple(query Query.QueryExpression) (GoXrm.EntityCollection, error) {
+
+	var returnedError error = nil
 
 	res := GoXrm.EntityCollection{EntityName: query.EntityName}
 
@@ -55,7 +58,7 @@ func (this *CrmServiceClient) RetrieveMultiple(query Query.QueryExpression) GoXr
 	req, err := http.NewRequest("POST", baseUrl+relativeUrl+"/$batch", bytes.NewBuffer(stringContent))
 
 	if err != nil {
-		panic(err)
+		returnedError = err
 	}
 	if this.aadAuthResult.AuthType != AADAuth.AuthType_AD {
 		req.Header.Add("Authorization", "Bearer "+this.aadAuthResult.AccessToken)
@@ -73,7 +76,7 @@ func (this *CrmServiceClient) RetrieveMultiple(query Query.QueryExpression) GoXr
 	client := &http.Client{}
 	var resp, err2 = client.Do(req)
 	if err2 != nil {
-		panic(err2)
+		returnedError = err2
 	}
 	defer resp.Body.Close()
 
@@ -94,9 +97,20 @@ func (this *CrmServiceClient) RetrieveMultiple(query Query.QueryExpression) GoXr
 
 	bjs := []byte(r1)
 
+	jsonNodebArr, _, _, err0 := jsonparser.Get(bjs, "error")
+	if err0 != nil {
+		returnedError = err0
+	}
+	if len(jsonNodebArr) > 0 {
+		fmt.Println(string(jsonNodebArr))
+		returnedError = errors.New(string(jsonNodebArr))
+	}
+
+	jsonNodebArr = nil
+
 	jsonNodebArr, _, _, err4 := jsonparser.Get(bjs, "@Microsoft.Dynamics.CRM.fetchxmlpagingcookie")
 	if err4 != nil {
-		panic(err4)
+		returnedError = err4
 	}
 	pagingcookie := string(jsonNodebArr)
 
@@ -145,15 +159,19 @@ func (this *CrmServiceClient) RetrieveMultiple(query Query.QueryExpression) GoXr
 
 	res.FillEntities(jsonNodebArr)
 
-	return res
+	return res, returnedError
 }
 
-func (this *CrmServiceClient) RetrieveAllRecords(query Query.QueryExpression) GoXrm.EntityCollection {
+func (this *CrmServiceClient) RetrieveAllRecords(query Query.QueryExpression) (GoXrm.EntityCollection, error) {
 	res := GoXrm.NewEntityCollection2(query.EntityName)
 	var ec GoXrm.EntityCollection
+	var retErr error
 
 	for {
-		ec = this.RetrieveMultiple(query)
+		ec, retErr = this.RetrieveMultiple(query)
+		if retErr != nil {
+			return ec, retErr
+		}
 		for _, e := range ec.Entities {
 			res.Entities = append(res.Entities, e)
 		}
@@ -161,10 +179,10 @@ func (this *CrmServiceClient) RetrieveAllRecords(query Query.QueryExpression) Go
 			break
 		}
 	}
-	return res
+	return res, retErr
 }
 
-func (this *CrmServiceClient) RetrieveWithRM(logicalName string, id string, columnSet Query.ColumnSet) GoXrm.Entity {
+func (this *CrmServiceClient) RetrieveWithRM(logicalName string, id string, columnSet Query.ColumnSet) (GoXrm.Entity, error) {
 
 	qe := Query.QueryExpression{
 		EntityName: logicalName,
@@ -182,10 +200,15 @@ func (this *CrmServiceClient) RetrieveWithRM(logicalName string, id string, colu
 		},
 	}
 
-	ec := this.RetrieveMultiple(qe)
+	var retErr error
+
+	ec, retErr := this.RetrieveMultiple(qe)
+	if retErr != nil {
+		return GoXrm.Entity{}, retErr
+	}
 	if len(ec.Entities) > 0 {
-		return ec.Entities[0]
+		return ec.Entities[0], nil
 	}
 
-	return GoXrm.Entity{}
+	return GoXrm.Entity{}, retErr
 }
