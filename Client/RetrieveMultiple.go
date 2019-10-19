@@ -99,7 +99,9 @@ func (this *CrmServiceClient) RetrieveMultiple(query Query.QueryExpression) (GoX
 
 	jsonNodebArr, _, _, err0 := jsonparser.Get(bjs, "error")
 	if err0 != nil {
-		returnedError = err0
+		if err0.Error() != "Key path not found" {
+			returnedError = err0
+		}
 	}
 	if len(jsonNodebArr) > 0 {
 		fmt.Println(string(jsonNodebArr))
