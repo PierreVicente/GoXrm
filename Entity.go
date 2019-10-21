@@ -5,42 +5,42 @@ import (
 	"strings"
 )
 
-type Attribute struct {
-	Type  int `json:"-"`
-	Value interface{}
-}
+//type Attribute struct {
+//	Type  int `json:"-"`
+//	Value interface{}
+//}
 
 type Entity struct {
 	RowVersion      int64
 	Id              string
 	LogicalName     string
-	Attributes      map[string]Attribute
+	Attributes      map[string]interface{}
 	FormattedValues map[string]string
-	//RelatedEntities map[RelationShip]EntityCollection
-	jProps map[string]string
+	RelatedEntities map[RelationShip]EntityCollection
+	jProps          map[string]string
 }
 
 func (e *Entity) PrimaryIdAttribute() string {
 	return GetPrimaryIdAttribute(e.LogicalName)
 }
 
-func (e *Entity) GetAttributeValue(attributeName string) (Attribute, bool) {
+func (e *Entity) GetAttributeValue(attributeName string) (interface{}, bool) {
 	return e.Contains(attributeName)
 }
 
-func (e *Entity) Contains(attributeName string) (Attribute, bool) {
+func (e *Entity) Contains(attributeName string) (interface{}, bool) {
 	if val, ok := e.Attributes[attributeName]; ok {
 		return val, true
 	}
 	if val, ok := e.Attributes[strings.ToLower(attributeName)]; ok {
 		return val, true
 	}
-	return Attribute{0, nil}, false
+	return nil, false
 }
 
 func NewEntity(logicalName string, id string) Entity {
 	e := Entity{LogicalName: logicalName}
-	e.Attributes = make(map[string]Attribute)
+	e.Attributes = make(map[string]interface{})
 	e.jProps = make(map[string]string)
 	e.FormattedValues = make(map[string]string)
 	if id == "" {

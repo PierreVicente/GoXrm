@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/PierreVicente/GoXrm/Constants"
-	"github.com/PierreVicente/GoXrm/Metadata"
 	"github.com/buger/jsonparser"
 )
 
@@ -76,24 +75,24 @@ func JObjectToEntity(o []byte, entityName string) Entity {
 			fmt.Println("not implemented: " + vt.String() + " " + attribute)
 			break
 		case "string":
-			fieldType := Metadata.AttributeType_Unknown
+			//fieldType := Metadata.AttributeType_Unknown
 
 			if attribute == primaryIdAttribute {
 				e.Id = data
-				fieldType = Metadata.AttributeType_UniqueIdentifier
+				//fieldType = Metadata.AttributeType_UniqueIdentifier
 			}
 
 			if ok, _ := e.IsEntityReference(attribute); ok {
-				fieldType = Metadata.AttributeType_Lookup
+				//fieldType = Metadata.AttributeType_Lookup
 			}
 
-			e.Attributes[attribute] = Attribute{fieldType, data}
+			e.Attributes[attribute] = data
 
 			break
 		case "number":
 			v, err := strconv.ParseFloat(data, 64)
 			if err == nil {
-				e.Attributes[attribute] = Attribute{Metadata.AttributeType_Decimal, v}
+				e.Attributes[attribute] = v
 			} else {
 				fmt.Println(err)
 			}
@@ -107,7 +106,7 @@ func JObjectToEntity(o []byte, entityName string) Entity {
 		case "boolean":
 			v, err := strconv.ParseBool(data)
 			if err == nil {
-				e.Attributes[attribute] = Attribute{Metadata.AttributeType_Bool, v}
+				e.Attributes[attribute] = v
 			} else {
 				fmt.Println(err)
 			}
