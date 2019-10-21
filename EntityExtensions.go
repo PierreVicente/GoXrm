@@ -2,10 +2,12 @@ package GoXrm
 
 import (
 	"fmt"
+	"reflect"
+	"time"
+
 	"github.com/PierreVicente/GoXrm/Constants"
 	"github.com/PierreVicente/GoXrm/Metadata"
 	"github.com/google/uuid"
-	"time"
 )
 
 const _formattedSuffix = "@OData.Community.Display.V1.FormattedValue"
@@ -200,7 +202,22 @@ func (eptr *Entity) IsEntityReference(attribute string) (bool, string) {
 	refEntity, ok := e.jProps[attribute+_lookupLogicalnameSuffix]
 	if ok {
 		return ok, refEntity
-	} else {
-		return ok, ""
 	}
+
+	retAttr, ok := e.Contains(attribute)
+	if ok {
+		if reflect.TypeOf(retAttr.Value).String() == "EntityReference" {
+			eref, ok2 := retAttr.Value.(EntityReference)
+			if ok2 {
+				return true, eref.LogicalName
+			}
+		}
+
+		if retAttr.Type == Metadata.AttributeType_Lookup {
+			return true, retAttr.Value.(EntityReference).LogicalName
+		}
+	}
+
+	return ok, ""
+
 }

@@ -100,9 +100,9 @@ func (this *CrmServiceClient) RetrieveMultiple(query Query.QueryExpression) (GoX
 
 	jsonNodebArr, _, _, err0 := jsonparser.Get(bjs, "error")
 	if err0 != nil {
-		//if err0.Error() != "Key path not found" {
-		//	returnedError = err0
-		//}
+		if err0.Error() != "Key path not found" {
+			returnedError = err0
+		}
 	}
 	if len(jsonNodebArr) > 0 {
 		fmt.Println(string(jsonNodebArr))
@@ -113,7 +113,9 @@ func (this *CrmServiceClient) RetrieveMultiple(query Query.QueryExpression) (GoX
 
 	jsonNodebArr, _, _, err4 := jsonparser.Get(bjs, "@Microsoft.Dynamics.CRM.fetchxmlpagingcookie")
 	if err4 != nil {
-		returnedError = err4
+		if err4.Error() != "Key path not found" {
+			returnedError = err4
+		}
 	}
 	pagingcookie := string(jsonNodebArr)
 
@@ -138,7 +140,9 @@ func (this *CrmServiceClient) RetrieveMultiple(query Query.QueryExpression) (GoX
 
 	jsonNodebArr, _, _, err4 = jsonparser.Get(bjs, "@Microsoft.Dynamics.CRM.totalrecordcount")
 	if err4 != nil {
-		panic(err4)
+		if err4.Error() != "Key path not found" {
+			returnedError = err4
+		}
 	}
 	if len(jsonNodebArr) > 0 {
 		res.TotalRecordCount, _ = strconv.ParseInt(string(jsonNodebArr), 10, 64)
@@ -148,7 +152,9 @@ func (this *CrmServiceClient) RetrieveMultiple(query Query.QueryExpression) (GoX
 
 	jsonNodebArr, _, _, err4 = jsonparser.Get(bjs, "@Microsoft.Dynamics.CRM.totalrecordcountlimitexceeded")
 	if err4 != nil {
-		panic(err4)
+		if err4.Error() != "Key path not found" {
+			returnedError = err4
+		}
 	}
 	if len(jsonNodebArr) > 0 {
 		b1, err6 := strconv.ParseBool(string(jsonNodebArr))

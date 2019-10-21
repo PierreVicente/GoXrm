@@ -6,7 +6,7 @@ import (
 )
 
 type Attribute struct {
-	Type  int
+	Type  int `json:"-"`
 	Value interface{}
 }
 

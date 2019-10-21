@@ -3,11 +3,12 @@ package GoXrm
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/PierreVicente/GoXrm/Constants"
 	"github.com/PierreVicente/GoXrm/Metadata"
 	"github.com/buger/jsonparser"
-	"strconv"
-	"strings"
 )
 
 var spnames = map[string]string{
@@ -135,7 +136,7 @@ func EntityToJObject(target Entity, action string, isActivityEntity bool) string
 	action = strings.ToUpper(action)[0:1]
 
 	if action == "C" {
-		if target.Id != Constants.GuidEmpty {
+		if target.Id != Constants.GuidEmpty && target.Id != "" {
 			jo[GetPrimaryIdAttribute(target.LogicalName)] = target.Id
 		}
 	}
