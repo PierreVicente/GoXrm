@@ -84,10 +84,11 @@ func JObjectToEntity(o []byte, entityName string) Entity {
 
 			if ok, _ := e.IsEntityReference(attribute); ok {
 				//fieldType = Metadata.AttributeType_Lookup
+				cEref := EntityReference{Id: data, LogicalName: e.jProps[attribute+_lookupLogicalnameSuffix], Name: e.jProps[attribute+_formattedSuffix]}
+				e.Attributes[attribute] = cEref
+			} else {
+				e.Attributes[attribute] = data
 			}
-
-			e.Attributes[attribute] = data
-
 			break
 		case "number":
 			v, err := strconv.ParseFloat(data, 64)
@@ -153,7 +154,7 @@ func EntityToJObject(target Entity, action string, isActivityEntity bool) string
 			if isActivityEntity {
 				suffix = "_" + target.LogicalName
 			}
-			jo[attr+suffix+"@odata.bind"] = "/" + getCollectionSchemaName(refEntityName) + "(" + fmt.Sprintf("%v", val)
+			jo[attr+suffix+"@odata.bind"] = "/" + getCollectionSchemaName(refEntityName) + "(" + fmt.Sprintf("%v", val.(EntityReference).Id) + ")"
 		} else {
 			jo[attr] = val
 		}

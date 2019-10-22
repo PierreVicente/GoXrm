@@ -10,7 +10,7 @@ import (
 
 func (this *CrmServiceClient) Create(target GoXrm.Entity) string {
 
-	relativeUrl := "api/data/v" + this.ApiVersion + "/" + getCollectionSchemaName(target.LogicalName)
+	relativeUrl := "/api/data/v" + this.ApiVersion + "/" + getCollectionSchemaName(target.LogicalName)
 	baseUrl := this.aadAuthResult.Resource
 
 	jo := GoXrm.EntityToJObject(target, "C", false)

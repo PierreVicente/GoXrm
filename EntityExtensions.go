@@ -3,6 +3,7 @@ package GoXrm
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/PierreVicente/GoXrm/Constants"
@@ -45,18 +46,26 @@ func (e *Entity) GetEntityReference(attribute string) EntityReference {
 	//id
 	eref := NewEntityReference("", "")
 	if value, ok := e.Contains(attribute); ok {
-		eref.Id = fmt.Sprintf("%v", value)
+		if e.IsEntityReference(attribute) {
+			//logicalname
+			if str, ok := e.jProps[attribute+_lookupLogicalnameSuffix]; ok {
+				eref.LogicalName = fmt.Sprintf("%v", str)
+			}
+			//name
+			if str, ok := e.jProps[attribute+_formattedSuffix]; ok {
+				eref.Name = fmt.Sprintf("%v", str)
+			}
+		}
+		eref.Id = fmt.Sprintf("%v", value.(EntityReference).Id)
 	} else {
+		if !strings.HasPrefix(attribute, "_") && !strings.HasSuffix(attribute, "_value") {
+			webapiname := "_" + attribute + "_value"
+			return e.GetEntityReference(webapiname)
+		}
+
 		eref.Id = Constants.GuidEmpty
 	}
-	//logicalname
-	if str, ok := e.jProps[attribute+_lookupLogicalnameSuffix]; ok {
-		eref.LogicalName = fmt.Sprintf("%v", str)
-	}
-	//name
-	if str, ok := e.jProps[attribute+_formattedSuffix]; ok {
-		eref.Name = fmt.Sprintf("%v", str)
-	}
+
 	return eref
 }
 
@@ -200,7 +209,7 @@ func (eptr *Entity) IsEntityReference(attribute string) (bool, string) {
 	e := *eptr
 	refEntity, ok := e.jProps[attribute+_lookupLogicalnameSuffix]
 	if ok {
-		return ok, refEntity
+		return true, refEntity
 	}
 
 	retAttr, ok := e.Contains(attribute)
@@ -217,6 +226,6 @@ func (eptr *Entity) IsEntityReference(attribute string) (bool, string) {
 		//}
 	}
 
-	return ok, ""
+	return false, ""
 
 }
