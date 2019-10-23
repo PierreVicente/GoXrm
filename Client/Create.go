@@ -31,6 +31,8 @@ func (this *CrmServiceClient) Create(target GoXrm.Entity) string {
 	if this.CallerId != uuid.Nil {
 		req.Header.Add("MSCRMCallerID", this.CallerId.String())
 	}
+
+	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json;charset=utf-8")
 
 	client := &http.Client{}

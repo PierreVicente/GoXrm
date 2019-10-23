@@ -45,8 +45,10 @@ func (e *Entity) SetInt(attribute string, value int64) {
 func (e *Entity) GetEntityReference(attribute string) EntityReference {
 	//id
 	eref := NewEntityReference("", "")
-	if value, ok := e.Contains(attribute); ok {
-		if e.IsEntityReference(attribute) {
+	value, ok := e.Contains(attribute)
+	if ok {
+		ok2, _ := e.IsEntityReference(attribute)
+		if ok2 {
 			//logicalname
 			if str, ok := e.jProps[attribute+_lookupLogicalnameSuffix]; ok {
 				eref.LogicalName = fmt.Sprintf("%v", str)
