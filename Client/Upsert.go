@@ -44,11 +44,8 @@ func (this *CrmServiceClient) Upsert(target GoXrm.Entity, updateOnly bool) {
 	}
 	defer resp.Body.Close()
 
-	r1 := ""
-
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		r1 = resp.Header.Get("OData-EntityId")
-		r1 = r1[1:37]
+
 	} else {
 		panic("marchepas")
 	}
